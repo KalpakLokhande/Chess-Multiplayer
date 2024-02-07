@@ -1,9 +1,11 @@
 import React from 'react'
+import Piece from './Piece'
 
-const Square = () => {
+const Square = (props) => {
+
   return (
-    <div className='square'>
-      
+    <div className={`square ${props.isDark ? 'dark' : 'light'}`}>
+      {props.piece && <Piece id={props.piece}></Piece>}
     </div>
   )
 }

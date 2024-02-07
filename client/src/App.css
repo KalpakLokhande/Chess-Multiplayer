@@ -1,14 +1,19 @@
-*{
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
-body{
-    overflow: hidden;
+
+.App {
     width: 100%;
     height: 100dvh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: radial-gradient(#303030, black);
 }
-.board{
+
+.board {
     width: 640px;
     height: 640px;
     display: flex;
@@ -17,7 +22,13 @@ body{
     float: left;
     flex-wrap: wrap;
 }
-.square{
+
+.square {
+    width: 80px;
+    height: 80px;
+}
+
+.piece{
     width: 80px;
     height: 80px;
 }
