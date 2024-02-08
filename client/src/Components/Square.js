@@ -18,7 +18,7 @@ const Square = (props) => {
     } else if (props.piece) {
 
       possibleMoves = Moves.getMoves(props)
-
+      console.log(props.isCheck)
       props.handleClick(props, possibleMoves)
 
     }

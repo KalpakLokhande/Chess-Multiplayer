@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import Square from './Square'
 import Game from './Game'
+import Moves from './Moves'
 
 const Board = () => {
 
   const [FEN, setFEN] = useState('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR')
   const [squares, setSquares] = useState(Game.getSquares())
-  const [activeSquare,setActiveSquare] = useState('')
+  const [activeSquare, setActiveSquare] = useState('')
+  const [isCheck, setIsCheck] = useState([])
 
   const showMoves = (square, possibleMoves) => {
 
@@ -33,11 +35,8 @@ const Board = () => {
 
         let index = 64 - (parseInt(possibleMoves[i][j].charAt(1)) * 8) + (possibleMoves[i][j].charCodeAt(0) - 65)
 
-        // console.log(possibleMoves[i][j])
-
         if (updatedSquares[index] && (possibleMoves[i][j].charCodeAt(0) >= 65 && possibleMoves[i][j].charCodeAt(0) <= 72 && parseInt(possibleMoves[i][j].substring(1)) >= 1 && parseInt(possibleMoves[i][j].substring(1)) <= 8)) {
 
-          console.log(index)
           if (updatedSquares[index].piece && updatedSquares[index].piece.charAt(0) === square.piece.charAt(0)) break;
           else if (updatedSquares[index].piece && updatedSquares[index].piece.charAt(0) !== square.piece.charAt(0)) {
 
@@ -46,12 +45,11 @@ const Board = () => {
               skip = true
             }
 
-          }
-          else {
+          } else {
+
             updatedSquares[index].isPossibleMove = true
 
           }
-
 
         }
 
@@ -68,8 +66,10 @@ const Board = () => {
     let temp = activeSquare.piece
     squares[newSquare.index].piece = temp
     squares[activeSquare.index].piece = ''
+
+    checkForCheck(squares[newSquare.index])
+
     setActiveSquare('')
-    
     resetState()
 
   }
@@ -79,8 +79,10 @@ const Board = () => {
     let temp = activeSquare.piece
     squares[newSquare.index].piece = temp
     squares[activeSquare.index].piece = ''
+
+    checkForCheck(squares[newSquare.index])
+
     setActiveSquare('')
-    
     resetState()
 
   }
@@ -99,6 +101,28 @@ const Board = () => {
     setSquares(updatedSquares)
   }
 
+  const checkForCheck = (square) => {
+
+    let possibleMoves = Moves.getMoves(square)
+
+    for (let i = 0; i < possibleMoves.length; i++) {
+
+      for (let j = 0; j < possibleMoves[i].length; j++) {
+
+        let index = 64 - (parseInt(possibleMoves[i][j].charAt(1)) * 8) + (possibleMoves[i][j].charCodeAt(0) - 65)
+
+        if (squares[index].piece && squares[index].piece.charAt(0) !== activeSquare.piece.charAt(0) && squares[index].piece.charAt(1) === 'k') {
+
+          setIsCheck([possibleMoves[i], squares[index]])
+
+        }
+
+      }
+
+    }
+
+  }
+
   const renderSquares = () => {
 
     return squares.map(({ id, index, isDark, piece, highlight, isPossibleMove, isPossibleCapture }) => {
@@ -113,6 +137,7 @@ const Board = () => {
           isPossibleMove={isPossibleMove}
           isPossibleCapture={isPossibleCapture}
           highlight={highlight}
+          isCheck={isCheck}
           movePiece={movePiece}
           capturePiece={capturePiece}
           handleClick={showMoves}>

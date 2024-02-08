@@ -140,6 +140,15 @@ export default class Moves {
             for (let j = -1; j < 2; j++) {
 
                 if (i === 0 && j === 0) continue
+                // if (square.isCheck.length > 0) {
+
+                //     for (let k = 0; k < isCheck[0].length; k++) {
+
+                //         if (String.fromCharCode(square.id.charCodeAt(0) + i) + '' + (parseInt(square.id.charAt(1)) + j) === square.isCheck[0][k]) continue
+
+                //     }
+
+                // }
                 moves.push([(String.fromCharCode(square.id.charCodeAt(0) + i)) + '' + (parseInt(square.id.charAt(1)) + j)])
 
             }
