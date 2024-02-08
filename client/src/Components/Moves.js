@@ -163,6 +163,17 @@ export default class Moves {
         moves.push([(String.fromCharCode(square.id.charCodeAt(0) - 2)) + '' + (parseInt(square.id.charAt(1)) + 1)])
         moves.push([(String.fromCharCode(square.id.charCodeAt(0) - 1)) + '' + (parseInt(square.id.charAt(1)) + 2)])
 
+        // for(let i = 0; i < moves.length; i++){
+
+        //     for(let j = 0; j < moves[i].length; j++){
+
+        //         // console.log(moves[i][j].substring(1))
+        //         if(moves[i][j].charCodeAt(0) >= 65 && moves[i][j].charCodeAt(0) <= 72 && parseInt(moves[i][j].substring(1)) >= 1 && parseInt(moves[i][j].substring(1)) <= 8) console.log(moves[i][j])
+
+        //     }
+
+        // }
+
         return moves
 
     }

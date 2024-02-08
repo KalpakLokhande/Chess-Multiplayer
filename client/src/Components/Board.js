@@ -33,8 +33,11 @@ const Board = () => {
 
         let index = 64 - (parseInt(possibleMoves[i][j].charAt(1)) * 8) + (possibleMoves[i][j].charCodeAt(0) - 65)
 
-        if (updatedSquares[index] && (possibleMoves[i][j].charCodeAt(0) >= 65 && possibleMoves[i][j].charCodeAt(0) <= 72)) {
+        // console.log(possibleMoves[i][j])
 
+        if (updatedSquares[index] && (possibleMoves[i][j].charCodeAt(0) >= 65 && possibleMoves[i][j].charCodeAt(0) <= 72 && parseInt(possibleMoves[i][j].substring(1)) >= 1 && parseInt(possibleMoves[i][j].substring(1)) <= 8)) {
+
+          console.log(index)
           if (updatedSquares[index].piece && updatedSquares[index].piece.charAt(0) === square.piece.charAt(0)) break;
           else if (updatedSquares[index].piece && updatedSquares[index].piece.charAt(0) !== square.piece.charAt(0)) {
 
