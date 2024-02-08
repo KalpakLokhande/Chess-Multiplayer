@@ -1,84 +1,86 @@
 import React, { useEffect, useState } from 'react'
 import Square from './Square'
+import Game from './Game'
 
 const Board = () => {
 
-  const getSquares = () => {
-    
-    let squares = []
-    let letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
-    let dark = false
-    let index = 0
-    
-    for (let i = 0; i < 8; i++) {
-
-      for (let j = 0; j < 8; j++) {
-
-        squares.push({ id: letters[j] + '' + (i + 1), index: index, isDark: dark })
-        index++
-        dark = !dark
-        
-      }
-      dark = !dark
-    }
-
-    return squares
-    
-  }
-
   const [FEN, setFEN] = useState('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR')
-  const [squares, setSquares] = useState(getSquares())
+  const [squares, setSquares] = useState(Game.getSquares())
 
-  const readFEN = () => {
+  const showMoves = (square, possibleMoves) => {
 
-    let updatedSquares = [...squares]
-    let index = 0
+    const updatedSquares = [...squares]
 
-    for (let i = 0; i < FEN.length; i++) {
+    updatedSquares.map((newSquare) => {
 
-      let char = FEN.charAt(i)
+      if (newSquare.piece) {
 
-      if (!isNaN(char)) {
+        newSquare.highlight = (newSquare.id === square.id)
 
-        index += parseInt(char)
+      }
 
-      } else if (char === '/') {
+    })
 
-        continue
+    for (let i = 0; i < possibleMoves.length; i++) {
 
-      } else if (char === char.toLowerCase()) {
+      let skip = false
 
-        updatedSquares[index].piece = 'b' + char 
-        index++
+      for (let j = 0; j < possibleMoves[i].length; j++) {
+
+        let index = 64 - (parseInt(possibleMoves[i][j].charAt(1)) * 8) + (possibleMoves[i][j].charCodeAt(0) - 65)
+
+        if (updatedSquares[index] && (possibleMoves[i][j].charCodeAt(0) >= 65 && possibleMoves[i][j].charCodeAt(0) <= 72)) {
+
+          if (updatedSquares[index].piece && updatedSquares[index].piece.id.charAt(0) === square.piece.id.charAt(0)) break;
+          else if (updatedSquares[index].piece && updatedSquares[index].piece.id.charAt(0) !== square.piece.id.charAt(0)) {
+
+            if (!skip) {
+              updatedSquares[index].isPossibleCapture = true
+              skip = true
+            }
+
+          }
+          else {
+            updatedSquares[index].isPossibleMove = true
+
+          }
 
 
-      } else if (char === char.toUpperCase()) {
-
-        updatedSquares[index].piece = 'w' + char.toLowerCase()
-        index++
+        }
 
       }
 
     }
 
-    return updatedSquares
+    setSquares(updatedSquares)
 
   }
 
   const renderSquares = () => {
 
-    return squares.map(({id, index, isDark, piece}) => {
+    return squares.map(({ id, index, isDark, piece, highlight, isPossibleMove, isPossibleCapture }) => {
 
       return (
-        <Square id={id} index={index} isDark={isDark} key={id} piece={piece}> </Square>
+        <Square
+          id={id}
+          key={id}
+          index={index}
+          isDark={isDark}
+          piece={piece}
+          isPossibleMove={isPossibleMove}
+          isPossibleCapture={isPossibleCapture}
+          highlight={highlight}
+          handleClick={showMoves}>
+        </Square>
       )
 
     })
 
   }
+
   useEffect(() => {
 
-    setSquares(readFEN())
+    setSquares(Game.readFEN(squares, FEN))
 
   }, [])
 
