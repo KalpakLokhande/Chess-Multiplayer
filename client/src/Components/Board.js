@@ -6,9 +6,13 @@ const Board = () => {
 
   const [FEN, setFEN] = useState('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR')
   const [squares, setSquares] = useState(Game.getSquares())
+  const [activeSquare,setActiveSquare] = useState('')
 
   const showMoves = (square, possibleMoves) => {
 
+    resetState()
+
+    setActiveSquare(square)
     const updatedSquares = [...squares]
 
     updatedSquares.map((newSquare) => {
@@ -31,8 +35,8 @@ const Board = () => {
 
         if (updatedSquares[index] && (possibleMoves[i][j].charCodeAt(0) >= 65 && possibleMoves[i][j].charCodeAt(0) <= 72)) {
 
-          if (updatedSquares[index].piece && updatedSquares[index].piece.id.charAt(0) === square.piece.id.charAt(0)) break;
-          else if (updatedSquares[index].piece && updatedSquares[index].piece.id.charAt(0) !== square.piece.id.charAt(0)) {
+          if (updatedSquares[index].piece && updatedSquares[index].piece.charAt(0) === square.piece.charAt(0)) break;
+          else if (updatedSquares[index].piece && updatedSquares[index].piece.charAt(0) !== square.piece.charAt(0)) {
 
             if (!skip) {
               updatedSquares[index].isPossibleCapture = true
@@ -56,6 +60,42 @@ const Board = () => {
 
   }
 
+  const movePiece = (newSquare) => {
+
+    let temp = activeSquare.piece
+    squares[newSquare.index].piece = temp
+    squares[activeSquare.index].piece = ''
+    setActiveSquare('')
+    
+    resetState()
+
+  }
+
+  const capturePiece = (newSquare) => {
+
+    let temp = activeSquare.piece
+    squares[newSquare.index].piece = temp
+    squares[activeSquare.index].piece = ''
+    setActiveSquare('')
+    
+    resetState()
+
+  }
+
+  const resetState = () => {
+
+    let updatedSquares = [...squares]
+
+    updatedSquares.map(square => {
+
+      square.isPossibleCapture = false
+      square.isPossibleMove = false
+      square.highlight = false
+
+    })
+    setSquares(updatedSquares)
+  }
+
   const renderSquares = () => {
 
     return squares.map(({ id, index, isDark, piece, highlight, isPossibleMove, isPossibleCapture }) => {
@@ -70,6 +110,8 @@ const Board = () => {
           isPossibleMove={isPossibleMove}
           isPossibleCapture={isPossibleCapture}
           highlight={highlight}
+          movePiece={movePiece}
+          capturePiece={capturePiece}
           handleClick={showMoves}>
         </Square>
       )
