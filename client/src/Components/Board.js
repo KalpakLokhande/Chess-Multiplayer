@@ -8,7 +8,7 @@ const Board = () => {
   const [FEN, setFEN] = useState('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR')
   const [squares, setSquares] = useState(Game.getSquares())
   const [activeSquare, setActiveSquare] = useState('')
-  const [isCheck, setIsCheck] = useState([])
+  const [currentPlayer, setCurrentPlayer] = useState('w')
 
   const showMoves = (square, possibleMoves) => {
 
@@ -17,7 +17,7 @@ const Board = () => {
     setActiveSquare(square)
     const updatedSquares = [...squares]
 
-    updatedSquares.map((newSquare) => {
+    updatedSquares.forEach((newSquare) => {
 
       if (newSquare.piece) {
 
@@ -27,37 +27,65 @@ const Board = () => {
 
     })
 
-    for (let i = 0; i < possibleMoves.length; i++) {
+    for (let i = 0; i < possibleMoves[1].length; i++) {
 
-      let skip = false
+      possibleMoves[1][i].isPossibleCapture = true
 
-      for (let j = 0; j < possibleMoves[i].length; j++) {
+    }
+    for (let i = 0; i < possibleMoves[0].length; i++) {
 
-        let index = 64 - (parseInt(possibleMoves[i][j].charAt(1)) * 8) + (possibleMoves[i][j].charCodeAt(0) - 65)
-
-        if (updatedSquares[index] && (possibleMoves[i][j].charCodeAt(0) >= 65 && possibleMoves[i][j].charCodeAt(0) <= 72 && parseInt(possibleMoves[i][j].substring(1)) >= 1 && parseInt(possibleMoves[i][j].substring(1)) <= 8)) {
-
-          if (updatedSquares[index].piece && updatedSquares[index].piece.charAt(0) === square.piece.charAt(0)) break;
-          else if (updatedSquares[index].piece && updatedSquares[index].piece.charAt(0) !== square.piece.charAt(0)) {
-
-            if (!skip) {
-              updatedSquares[index].isPossibleCapture = true
-              skip = true
-            }
-
-          } else {
-
-            updatedSquares[index].isPossibleMove = true
-
-          }
-
-        }
-
-      }
+      possibleMoves[0][i].isPossibleMove = true
 
     }
 
-    setSquares(updatedSquares)
+    // for (let i = 0; i < possibleMoves.length; i++) {
+
+    //   let skip = false
+
+    //   for (let j = 0; j < possibleMoves[i].length; j++) {
+
+    //     let index = 64 - (parseInt(possibleMoves[i][j].charAt(1)) * 8) + (possibleMoves[i][j].charCodeAt(0) - 65)
+
+    //     if (updatedSquares[index] && (possibleMoves[i][j].charCodeAt(0) >= 65 && possibleMoves[i][j].charCodeAt(0) <= 72 && parseInt(possibleMoves[i][j].substring(1)) >= 1 && parseInt(possibleMoves[i][j].substring(1)) <= 8)) {
+
+    //       if (updatedSquares[index].piece && updatedSquares[index].piece.charAt(0) === square.piece.charAt(0)) break;
+    //       else if (updatedSquares[index].piece && updatedSquares[index].piece.charAt(0) !== square.piece.charAt(0)) {
+    //         if (isCheck.length > 0) {
+
+    //           console.log(isCheck[1].id)
+    //           if (updatedSquares[index].id === isCheck[1].id) updatedSquares[index].isPossibleCapture = true
+
+    //         }
+    //         else if (!skip) {
+    //           updatedSquares[index].isPossibleCapture = true
+    //           skip = true
+    //         }
+
+    //       } else {
+
+    //         if (isCheck.length > 0) {
+
+    //           for (let k = 0; k < isCheck[0].length; k++) {
+
+    //             if (updatedSquares[index].id === isCheck[0]) updatedSquares[index].isPossibleMove = true
+
+    //           }
+
+    //         }else{
+
+    //           updatedSquares[index].isPossibleMove = true
+
+    //         }
+
+    //       }
+
+    //     }
+
+    //   }
+
+    // }
+
+    // setSquares(updatedSquares)
 
   }
 
@@ -67,10 +95,11 @@ const Board = () => {
     squares[newSquare.index].piece = temp
     squares[activeSquare.index].piece = ''
 
-    checkForCheck(squares[newSquare.index])
+    checkForCheck()
 
     setActiveSquare('')
     resetState()
+    swapCurrentPlayer()
 
   }
 
@@ -80,10 +109,17 @@ const Board = () => {
     squares[newSquare.index].piece = temp
     squares[activeSquare.index].piece = ''
 
-    checkForCheck(squares[newSquare.index])
+    checkForCheck()
 
     setActiveSquare('')
     resetState()
+    swapCurrentPlayer()
+
+  }
+
+  const swapCurrentPlayer = () => {
+
+    setCurrentPlayer(currentPlayer === 'w' ? 'b' : 'w')
 
   }
 
@@ -91,7 +127,7 @@ const Board = () => {
 
     let updatedSquares = [...squares]
 
-    updatedSquares.map(square => {
+    updatedSquares.forEach(square => {
 
       square.isPossibleCapture = false
       square.isPossibleMove = false
@@ -101,32 +137,31 @@ const Board = () => {
     setSquares(updatedSquares)
   }
 
-  const checkForCheck = (square) => {
+  const checkForCheck = () => {
 
-    let possibleMoves = Moves.getMoves(square)
+    let possibleMoves = Moves.getAllPossibleMoves(squares, currentPlayer)
 
-    for (let i = 0; i < possibleMoves.length; i++) {
+    for(let i = 0; i < possibleMoves[1].length; i++){
 
-      for (let j = 0; j < possibleMoves[i].length; j++) {
-
-        let index = 64 - (parseInt(possibleMoves[i][j].charAt(1)) * 8) + (possibleMoves[i][j].charCodeAt(0) - 65)
-
-        if (squares[index].piece && squares[index].piece.charAt(0) !== activeSquare.piece.charAt(0) && squares[index].piece.charAt(1) === 'k') {
-
-          setIsCheck([possibleMoves[i], squares[index]])
-
-        }
-
-      }
+      if(possibleMoves[1][i].piece && possibleMoves[1][i].piece.charAt(1) === 'k') console.log('check')
 
     }
 
   }
 
+  // const checkForCheckMate = () => {
+
+  //   let nextPlayer = currentPlayer === 'w' ? 'b' : 'w'
+
+  //   let possibleMoves = Moves.getAllPossibleMoves(squares, nextPlayer)
+
+  //   console.log(possibleMoves)
+
+  // }
+
   const renderSquares = () => {
 
     return squares.map(({ id, index, isDark, piece, highlight, isPossibleMove, isPossibleCapture }) => {
-
       return (
         <Square
           id={id}
@@ -137,7 +172,8 @@ const Board = () => {
           isPossibleMove={isPossibleMove}
           isPossibleCapture={isPossibleCapture}
           highlight={highlight}
-          isCheck={isCheck}
+          currentPlayer={currentPlayer}
+          squares={squares}
           movePiece={movePiece}
           capturePiece={capturePiece}
           handleClick={showMoves}>

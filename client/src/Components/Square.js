@@ -15,10 +15,9 @@ const Square = (props) => {
 
       props.capturePiece(props)
 
-    } else if (props.piece) {
+    } else if (props.piece && props.currentPlayer === props.piece.charAt(0)) {
 
-      possibleMoves = Moves.getMoves(props)
-      console.log(props.isCheck)
+      possibleMoves = Moves.getMoves(props.squares[props.index], props.squares)
       props.handleClick(props, possibleMoves)
 
     }
