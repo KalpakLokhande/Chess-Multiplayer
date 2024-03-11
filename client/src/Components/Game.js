@@ -11,7 +11,7 @@ export default class Game {
 
             for (let j = 0; j < 8; j++) {
 
-                squares.push({ id: letters[j] + '' + (8 - i), index: index, isDark: dark, highlight: false, isPossibleMove: false, isPossibleCapture: false })
+                squares.push({ id: letters[j] + '' + (8 - i), index: index, isDark: dark, highlight: false, isPossibleMove: false, isPossibleCapture: false , piece:''})
                 index++
                 dark = !dark
 

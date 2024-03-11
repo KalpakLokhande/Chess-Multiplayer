@@ -11,6 +11,7 @@
     justify-content: center;
     align-items: center;
     background: radial-gradient(#303030, black);
+    overflow: hidden;
 }
 
 .board {

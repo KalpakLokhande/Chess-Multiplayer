@@ -11,35 +11,6 @@ export default class Moves {
         if (square.piece.charAt(1) === 'k') legalMoves = Moves.getKingMoves(square, squares)
         if (square.piece.charAt(1) === 'n') legalMoves = Moves.getNightMoves(square, squares)
 
-        // if (isCheck.length > 0 && squares[square.index].piece.charAt(1) !== 'k') {
-
-        //     let moves = legalMoves
-        //     let defenseMoves = [[], [], [], []]
-
-        //     for (let i = 0; i < moves[0].length; i++) {
-
-        //         for (let j = 0; j < isCheck[1].length; j++) {
-
-        //             if (moves[0][i] === isCheck[1][j]) defenseMoves[0].push(moves[0][i])
-
-        //         }
-
-        //     }
-
-        //     for (let i = 0; i < moves[1].length; i++) {
-
-        //         for (let j = 0; j < isCheck[0].length; j++) {
-
-        //             if (moves[1][i] === isCheck[0][j]) defenseMoves[1].push(moves[1][i])
-
-        //         }
-
-        //     }
-
-        //     legalMoves = defenseMoves
-
-        // }
-
         return legalMoves
     }
 
@@ -55,7 +26,6 @@ export default class Moves {
             possibleMoves[0][i].piece = originPiece
             let check = Moves.getAllPossibleMoves(squares, square.piece.charAt(0) === 'b' ? 'w' : 'b')
             if (!check[1].some(sq => sq.piece === square.piece.charAt(0) + 'k')) moves[0].push(possibleMoves[0][i])
-
             possibleMoves[0][i].piece = ''
             originSquare.piece = originPiece
 
@@ -68,7 +38,6 @@ export default class Moves {
             possibleMoves[1][i].piece = originPiece
 
             let check = Moves.getAllPossibleMoves(squares, square.piece.charAt(0) === 'b' ? 'w' : 'b')
-
             if (!check[1].some(sq => sq.piece === square.piece.charAt(0) + 'k')) moves[1].push(possibleMoves[1][i])
 
             possibleMoves[1][i].piece = simPiece

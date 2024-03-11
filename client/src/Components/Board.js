@@ -5,8 +5,8 @@ import Moves from './Moves'
 
 const Board = () => {
 
-  // const [FEN, setFEN] = useState('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR')
-  const [FEN, setFEN] = useState('rn1q2n1/b3k1pr/pp1pB1Qp/2p1p1P1/2P1PP2/5R1P/P2P4/RNB1K3')
+  const [FEN, setFEN] = useState('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR')
+  // const [FEN, setFEN] = useState('8/3r3k/NP1p4/p2QP1P1/1BB3Pp/1R4n1/6K1/5R2')
   const [squares, setSquares] = useState(Game.getSquares())
   const [activeSquare, setActiveSquare] = useState('')
   const [currentPlayer, setCurrentPlayer] = useState('w')
@@ -50,8 +50,6 @@ const Board = () => {
     squares[newSquare.index].piece = temp
     squares[activeSquare.index].piece = ''
 
-    if(checkForMate()) console.log('checkMate!')
-
     setActiveSquare('')
     resetState()
     swapCurrentPlayer()
@@ -71,28 +69,50 @@ const Board = () => {
 
   const checkForMate = () => {
 
-    let opp = currentPlayer === 'w' ? 'b' : 'w'
-    let pieces = []
-    squares.forEach(sq => {
+    let currentPlayerPieces = []
 
-      if(sq.piece && sq.piece.charAt(0) === opp) pieces.push(sq)
+    squares.forEach(square => {
+      if(square.piece && square.piece[0] === currentPlayer) currentPlayerPieces.push(square)
+    })
+
+    let AllPossibleMoves = []
+
+    currentPlayerPieces.forEach(piece => {
+
+      let possibleMoves = Moves.getMoves(piece,squares)
+      let originSquare = squares[piece.index]
+      let originPiece = squares[piece.index].piece
+
+      for(let i = 0; i < possibleMoves[0].length; i++){
+
+        originSquare.piece = ''
+        possibleMoves[0][i].piece = originPiece
+        let check = Moves.getAllPossibleMoves(squares,currentPlayer === 'w' ? 'b' : 'w')
+
+        if(!check[1].some(sq => sq.piece === currentPlayer + 'k')) AllPossibleMoves.push(possibleMoves[0][i])
+
+        possibleMoves[0][i].piece = ''
+        originSquare.piece = originPiece
+      }
+
+      for(let i = 0; i < possibleMoves[1].length; i++){
+
+        let temp = possibleMoves[1][i].piece
+        originSquare.piece = ''
+        possibleMoves[1][i].piece = originPiece
+        let check = Moves.getAllPossibleMoves(squares,currentPlayer === 'w' ? 'b' : 'w')
+
+        if(!check[1].some(sq => sq.piece === currentPlayer + 'k')) AllPossibleMoves.push(possibleMoves[1][i])
+
+        possibleMoves[1][i].piece = temp
+        originSquare.piece = originPiece
+
+      }
 
     })
 
-    let check = 0
-
-    pieces.forEach(piece => {
-
-      let moves = Moves.getAllPossibleMoves(piece,squares)
-
-      let legalMoves = Moves.getLegalMoves(squares[piece.index],moves,squares)
-
-      if(legalMoves[0].length > 0 && legalMoves[1].length > 0) check++
-
-    })
-
-    if(check === 0) return true
-    else return false
+    if(AllPossibleMoves.length !== 0) return false
+    return true
 
   }
 
@@ -131,7 +151,6 @@ const Board = () => {
           highlight={highlight}
           currentPlayer={currentPlayer}
           squares={squares}
-          // isCheck={isCheck}
           movePiece={movePiece}
           capturePiece={capturePiece}
           handleClick={showMoves}>
@@ -146,7 +165,14 @@ const Board = () => {
 
     setSquares(Game.readFEN(squares, FEN))
 
-  }, [])
+  }, [FEN])
+
+  useEffect(() => {
+
+    if(checkForMate())console.log("CheckMate!") 
+
+  },[squares])
+
 
   return (
     <div className='board' >
