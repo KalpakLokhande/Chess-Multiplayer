@@ -1,10 +1,10 @@
 export default class Moves {
 
-    static getMoves = (square, squares) => {
+    static getMoves = (square, squares, enPassant) => {
 
         let legalMoves = [[], []]
 
-        if (square.piece.charAt(1) === 'p') legalMoves = Moves.getPawnMoves(square, squares)
+        if (square.piece.charAt(1) === 'p') legalMoves = Moves.getPawnMoves(square, squares, enPassant)
         if (square.piece.charAt(1) === 'b') legalMoves = Moves.getBishopMoves(square, squares)
         if (square.piece.charAt(1) === 'r') legalMoves = Moves.getRookMoves(square, squares)
         if (square.piece.charAt(1) === 'q') legalMoves = Moves.getQueenMoves(square, squares)
@@ -14,17 +14,17 @@ export default class Moves {
         return legalMoves
     }
 
-    static getLegalMoves = (square, possibleMoves, squares) => {
+    static getLegalMoves = (square, possibleMoves, squares, enPassant) => {
 
         let moves = [[], []]
         let originSquare = squares[square.index]
         let originPiece = squares[square.index].piece
-        
+
         for (let i = 0; i < possibleMoves[0].length; i++) {
-            
+
             originSquare.piece = ''
             possibleMoves[0][i].piece = originPiece
-            let check = Moves.getAllPossibleMoves(squares, square.piece.charAt(0) === 'b' ? 'w' : 'b')
+            let check = Moves.getAllPossibleMoves(squares, square.piece.charAt(0) === 'b' ? 'w' : 'b', enPassant)
             if (!check[1].some(sq => sq.piece === square.piece.charAt(0) + 'k')) moves[0].push(possibleMoves[0][i])
             possibleMoves[0][i].piece = ''
             originSquare.piece = originPiece
@@ -37,7 +37,7 @@ export default class Moves {
             originSquare.piece = ''
             possibleMoves[1][i].piece = originPiece
 
-            let check = Moves.getAllPossibleMoves(squares, square.piece.charAt(0) === 'b' ? 'w' : 'b')
+            let check = Moves.getAllPossibleMoves(squares, square.piece.charAt(0) === 'b' ? 'w' : 'b', enPassant)
             if (!check[1].some(sq => sq.piece === square.piece.charAt(0) + 'k')) moves[1].push(possibleMoves[1][i])
 
             possibleMoves[1][i].piece = simPiece
@@ -49,7 +49,7 @@ export default class Moves {
 
     }
 
-    static getAllPossibleMoves = (squares, currentPlayer) => {
+    static getAllPossibleMoves = (squares, currentPlayer, enPassant) => {
 
         let pieces = []
         let moves = [[], []]
@@ -66,7 +66,7 @@ export default class Moves {
 
         for (let i = 0; i < pieces.length; i++) {
 
-            let m = Moves.getMoves(squares[pieces[i].index], squares)
+            let m = Moves.getMoves(squares[pieces[i].index], squares, enPassant)
             moves[0].push(...m[0])
             moves[1].push(...m[1])
 
@@ -76,7 +76,7 @@ export default class Moves {
 
     }
 
-    static getPawnMoves = (square, squares) => {
+    static getPawnMoves = (square, squares, enPassant) => {
 
         let moves = [[], []]
         let legalMoves = [[], []]
@@ -113,12 +113,17 @@ export default class Moves {
 
         for (let i = 0; i < moves[1].length; i++) {
 
-            let index = 64 - (parseInt(moves[1][i].charAt(1)) * 8) + (parseInt(moves[1][i].charCodeAt(0)) - 65)
-
-            if (squares[index] && squares[index].piece && squares[index].piece.charAt(0) !== square.piece.charAt(0)) {
-
-                legalMoves[1].push(squares[index])
-
+            let col = moves[1][i].charCodeAt(0);
+            let row = parseInt(moves[1][i].charAt(1));
+            
+            if (col >= 65 && col <= 72 && row >= 1 && row <= 8) {
+                let index = 64 - (row * 8) + (col - 65);
+                if (enPassant && enPassant.id === squares[index].id) {
+                    legalMoves[1].push(squares[index]);
+                }
+                if (squares[index] && squares[index].piece && squares[index].piece.charAt(0) !== square.piece.charAt(0)) {
+                    legalMoves[1].push(squares[index]);
+                }
             }
 
         }

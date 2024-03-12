@@ -6,12 +6,14 @@ import Moves from './Moves'
 const Board = () => {
 
   const [FEN, setFEN] = useState('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR')
-  // const [FEN, setFEN] = useState('8/3r3k/NP1p4/p2QP1P1/1BB3Pp/1R4n1/6K1/5R2')
+  // const [FEN, setFEN] = useState('rnbqkbnr/pppppppp/8/5P2/8/8/PPPPPPPP/RNBQKBNR')
+
   const [squares, setSquares] = useState(Game.getSquares())
   const [activeSquare, setActiveSquare] = useState('')
   const [currentPlayer, setCurrentPlayer] = useState('w')
+  const [enPassant, setEnPassant] = useState(null)
 
-  const showMoves = (square, possibleMoves) => {
+  const showMoves = (square, possibleMoves, enPassant) => {
 
     resetState()
 
@@ -28,7 +30,7 @@ const Board = () => {
 
     })
 
-    const moves = Moves.getLegalMoves(square, possibleMoves, squares)
+    const moves = Moves.getLegalMoves(square, possibleMoves, squares, enPassant)
 
     moves[0].forEach(move => {
 
@@ -50,6 +52,16 @@ const Board = () => {
     squares[newSquare.index].piece = temp
     squares[activeSquare.index].piece = ''
 
+    if (activeSquare.piece.charAt(1).toLowerCase() === 'p' && (activeSquare.id.charAt(1) === '2' || activeSquare.id.charAt(1) === '7') && (newSquare.id.charAt(1) === '4' || newSquare.id.charAt(1) === '5')) {
+
+      Game.checkEnPassant(squares, newSquare, setEnPassant)
+
+    } else {
+
+      setEnPassant(null)
+
+    }
+
     setActiveSquare('')
     resetState()
     swapCurrentPlayer()
@@ -67,54 +79,7 @@ const Board = () => {
 
   }
 
-  const checkForMate = () => {
 
-    let currentPlayerPieces = []
-
-    squares.forEach(square => {
-      if(square.piece && square.piece[0] === currentPlayer) currentPlayerPieces.push(square)
-    })
-
-    let AllPossibleMoves = []
-
-    currentPlayerPieces.forEach(piece => {
-
-      let possibleMoves = Moves.getMoves(piece,squares)
-      let originSquare = squares[piece.index]
-      let originPiece = squares[piece.index].piece
-
-      for(let i = 0; i < possibleMoves[0].length; i++){
-
-        originSquare.piece = ''
-        possibleMoves[0][i].piece = originPiece
-        let check = Moves.getAllPossibleMoves(squares,currentPlayer === 'w' ? 'b' : 'w')
-
-        if(!check[1].some(sq => sq.piece === currentPlayer + 'k')) AllPossibleMoves.push(possibleMoves[0][i])
-
-        possibleMoves[0][i].piece = ''
-        originSquare.piece = originPiece
-      }
-
-      for(let i = 0; i < possibleMoves[1].length; i++){
-
-        let temp = possibleMoves[1][i].piece
-        originSquare.piece = ''
-        possibleMoves[1][i].piece = originPiece
-        let check = Moves.getAllPossibleMoves(squares,currentPlayer === 'w' ? 'b' : 'w')
-
-        if(!check[1].some(sq => sq.piece === currentPlayer + 'k')) AllPossibleMoves.push(possibleMoves[1][i])
-
-        possibleMoves[1][i].piece = temp
-        originSquare.piece = originPiece
-
-      }
-
-    })
-
-    if(AllPossibleMoves.length !== 0) return false
-    return true
-
-  }
 
   const swapCurrentPlayer = () => {
 
@@ -151,6 +116,7 @@ const Board = () => {
           highlight={highlight}
           currentPlayer={currentPlayer}
           squares={squares}
+          enPassant={enPassant}
           movePiece={movePiece}
           capturePiece={capturePiece}
           handleClick={showMoves}>
@@ -169,9 +135,10 @@ const Board = () => {
 
   useEffect(() => {
 
-    if(checkForMate())console.log("CheckMate!") 
+    if (Game.checkForMate(squares, currentPlayer, enPassant)) console.log("CheckMate!")
 
-  },[squares])
+
+  }, [squares])
 
 
   return (
