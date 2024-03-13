@@ -13,11 +13,11 @@ const Square = (props) => {
 
     } else if (props.isPossibleCapture) {
 
-      props.capturePiece(props)
+      props.capturePiece(props, props.enPassant)
 
-    } else if (props.piece && props.currentPlayer === props.piece.charAt(0)) {
+    } else if (props.piece && props.currentPlayer === props.piece.id.charAt(0)) {
 
-      possibleMoves = Moves.getMoves(props.squares[props.index], props.squares, props.enPassant)
+      possibleMoves = Moves.getMoves(props.squares[props.index], props.squares, props.enPassant, props.castling)
       props.handleClick(props, possibleMoves)
 
     }

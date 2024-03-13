@@ -13,7 +13,7 @@ export default class Game {
 
             for (let j = 0; j < 8; j++) {
 
-                squares.push({ id: letters[j] + '' + (8 - i), index: index, isDark: dark, highlight: false, isPossibleMove: false, isPossibleCapture: false, piece: '' })
+                squares.push({ id: letters[j] + '' + (8 - i), index: index, isDark: dark, highlight: false, isPossibleMove: false, isPossibleCapture: false })
                 index++
                 dark = !dark
 
@@ -44,13 +44,13 @@ export default class Game {
 
             } else if (char === char.toLowerCase()) {
 
-                updatedSquares[index].piece = 'b' + char
+                updatedSquares[index].piece = { id: 'b' + char, firstMove: true }
                 index++
 
 
             } else if (char === char.toUpperCase()) {
 
-                updatedSquares[index].piece = 'w' + char.toLowerCase()
+                updatedSquares[index].piece = { id: 'w' + char.toLowerCase(), firstMove: true }
                 index++
 
             }
@@ -61,19 +61,22 @@ export default class Game {
 
     }
 
-    static checkForMate = (squares, currentPlayer, enPassant) => {
+
+    static checkForMate = (squares, currentPlayer, enPassant, castling) => {
+
+        //You have to change this later. use getlegalmoves method here.
 
         let currentPlayerPieces = []
 
         squares.forEach(square => {
-            if (square.piece && square.piece[0] === currentPlayer) currentPlayerPieces.push(square)
+            if (square.piece && square.piece.id.charAt(0) === currentPlayer) currentPlayerPieces.push(square)
         })
 
         let AllPossibleMoves = []
 
         currentPlayerPieces.forEach(piece => {
 
-            let possibleMoves = Moves.getMoves(piece, squares, enPassant)
+            let possibleMoves = Moves.getMoves(piece, squares, enPassant,castling)
             let originSquare = squares[piece.index]
             let originPiece = squares[piece.index].piece
 
@@ -81,9 +84,9 @@ export default class Game {
 
                 originSquare.piece = ''
                 possibleMoves[0][i].piece = originPiece
-                let check = Moves.getAllPossibleMoves(squares, currentPlayer === 'w' ? 'b' : 'w', enPassant)
+                let check = Moves.getAllPossibleMoves(squares, currentPlayer === 'w' ? 'b' : 'w', enPassant,castling)
 
-                if (!check[1].some(sq => sq.piece === currentPlayer + 'k')) AllPossibleMoves.push(possibleMoves[0][i])
+                if (!check[1].some(sq => sq.piece.id === currentPlayer + 'k')) AllPossibleMoves.push(possibleMoves[0][i])
 
                 possibleMoves[0][i].piece = ''
                 originSquare.piece = originPiece
@@ -94,7 +97,7 @@ export default class Game {
                 let temp = possibleMoves[1][i].piece
                 originSquare.piece = ''
                 possibleMoves[1][i].piece = originPiece
-                let check = Moves.getAllPossibleMoves(squares, currentPlayer === 'w' ? 'b' : 'w', enPassant)
+                let check = Moves.getAllPossibleMoves(squares, currentPlayer === 'w' ? 'b' : 'w', enPassant, castling)
 
                 if (!check[1].some(sq => sq.piece === currentPlayer + 'k')) AllPossibleMoves.push(possibleMoves[1][i])
 
@@ -110,30 +113,52 @@ export default class Game {
 
     }
 
-    static checkEnPassant = (squares, square, setEnPassant) => {
+    static checkCastlingRights = (squares, castling, setCastling) => {
 
-        if (squares[square.index - 1] && squares[square.index - 1].piece) {
+        let blackRooks = []
+        let whiteRooks = []
+        let hasWhiteKingMoved = false
+        let hasBlackKingMoved = false
+        let updatedCastling = [false,false,false,false]
 
-            if (squares[square.index - 1].piece.charAt(1).toLowerCase() === 'p' && squares[square.index - 1].piece.charAt(0) !== squares[square.index].piece.charAt(0)) {
+        squares.forEach(square => {
 
-                console.log(squares[square.index - 8])
-                if (squares[square.index].piece.charAt(0) === 'w') setEnPassant(squares[square.index + 8])
-                else setEnPassant(squares[square.index - 8])
+            if (square.piece && square.piece.id.charAt(0) === 'b' && square.piece.id.charAt(1) === 'r') blackRooks.push(square)
+            if (square.piece && square.piece.id.charAt(0) === 'w' && square.piece.id.charAt(1) === 'r') whiteRooks.push(square)
+            if (square.piece && square.piece.id.charAt(0) === 'w' && square.piece.id.charAt(1) === 'k') hasWhiteKingMoved = square.piece.firstMove
+            if (square.piece && square.piece.id.charAt(0) === 'b' && square.piece.id.charAt(1) === 'k') hasBlackKingMoved = square.piece.firstMove
+        })
 
-            }
+        if (hasWhiteKingMoved) {
 
+            whiteRooks.forEach(piece => {
+
+                if (piece.id === 'H1' && piece.piece.firstMove) updatedCastling[0] = true
+                if (piece.id === 'A1' && piece.piece.firstMove) updatedCastling[1] = true
+
+            })
+
+        }else{
+            updatedCastling[0] = false
+            updatedCastling[0] = false
         }
-        if (squares[square.index + 1] && squares[square.index + 1].piece) {
 
-            if (squares[square.index + 1].piece.charAt(1).toLowerCase() === 'p' && squares[square.index + 1].piece.charAt(0) !== squares[square.index].piece.charAt(0)) {
+        if (hasBlackKingMoved) {
 
-                console.log(squares[square.index + 8])
-                if (squares[square.index].piece.charAt(0) === 'w') setEnPassant(squares[square.index + 8])
-                else setEnPassant(squares[square.index - 8])
+            blackRooks.forEach(piece => {
 
-            }
+                if (piece.id === 'H8' && piece.piece.firstMove) updatedCastling[2] = true
+                if (piece.id === 'A8' && piece.piece.firstMove) updatedCastling[3] = true
 
+            })
+
+        }else{
+            updatedCastling[2] = false
+            updatedCastling[3] = false
         }
+
+        // setCastling(updatedCastling)
+        return updatedCastling
 
     }
 }
