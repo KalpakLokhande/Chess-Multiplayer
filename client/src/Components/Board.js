@@ -3,17 +3,17 @@ import Square from './Square'
 import Game from './Game'
 import Moves from './Moves'
 
-const Board = () => {
+const Board = (props) => {
 
   // const [FEN, setFEN] = useState('r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R')
-  const [FEN, setFEN] = useState('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR')
 
   const [squares, setSquares] = useState(Game.getSquares())
   const [activeSquare, setActiveSquare] = useState('')
   const [currentPlayer, setCurrentPlayer] = useState('w')
   const [enPassant, setEnPassant] = useState(null)
   const [castling, setCastling] = useState([true, true, true, true])
-
+  const [halfMoveClock, setHalfMoveClock] = useState(0)
+  const [fullMoveNumber, setFullMoveNumber] = useState(1)
 
   const showMoves = (square, possibleMoves, enPassant) => {
 
@@ -68,10 +68,8 @@ const Board = () => {
 
     if (square.piece && square.piece.id.charAt(1) === 'k') {
 
-      console.log(moves[0], moves[0].find(move => move.id === squares[square.index + 1].id))
       if (moves[0].find(move => move.id === squares[square.index - 1].id) === undefined && moves[0].find(move => move.id === squares[square.index - 2].id) !== undefined) moves[0] = moves[0].filter(move => move.id !== squares[square.index - 2].id)
       if (moves[0].find(move => move.id === squares[square.index + 1].id) === undefined && moves[0].find(move => move.id === squares[square.index + 2].id) !== undefined) moves[0] = moves[0].filter(move => move.id !== squares[square.index + 2].id)
-      console.log(moves[0])
 
     }
 
@@ -101,11 +99,17 @@ const Board = () => {
       if (activeSquare.id.charAt(1) === '2') setEnPassant({ square: squares[activeSquare.index - 8], originalSquare: squares[newSquare.index], piece: activeSquare.piece })
       if (activeSquare.id.charAt(1) === '7') setEnPassant({ square: squares[activeSquare.index + 8], originalSquare: squares[newSquare.index], piece: activeSquare.piece })
 
-    } else {
+    }else {
 
       setEnPassant(null)
+      setHalfMoveClock(prevhalfMoveClock => prevhalfMoveClock + 1)
 
     }
+    if (activeSquare.piece.id.charAt(1) === 'p') {
+
+      setHalfMoveClock(0)
+
+    } 
 
     if (activeSquare.piece.id.charAt(1) === 'k') {
 
@@ -154,7 +158,6 @@ const Board = () => {
 
           let rook = squares[activeSquare.index - 4].piece
           let king = activeSquare.piece
-          console.log(king)
           squares[activeSquare.index - 4].piece = ''
           squares[activeSquare.index].piece = ''
           squares[newSquare.index].piece = king
@@ -170,6 +173,11 @@ const Board = () => {
     setActiveSquare('')
     resetState()
     swapCurrentPlayer()
+    setCastling(Game.checkCastlingRights(squares, castling))
+
+    if(activeSquare.piece.id.charAt(0) === 'b') setFullMoveNumber(prevfullMoveNumber => prevfullMoveNumber + 1)
+    
+
   }
 
   const capturePiece = (newSquare, enPassantCapture) => {
@@ -178,7 +186,6 @@ const Board = () => {
     if (enPassant && newSquare.id === enPassantCapture.square.id) {
 
       enPassant.square.piece = temp
-      console.log(enPassant.originalSquare)
       enPassant.originalSquare.piece = ''
       squares[activeSquare.index].piece = ''
 
@@ -192,6 +199,9 @@ const Board = () => {
     setActiveSquare('')
     resetState()
     swapCurrentPlayer()
+    setCastling(Game.checkCastlingRights(squares, castling))
+    setHalfMoveClock(0)
+    if(activeSquare.piece.id.charAt(0) === 'b') setFullMoveNumber(prevfullMoveNumber => prevfullMoveNumber + 1)
 
   }
 
@@ -246,14 +256,14 @@ const Board = () => {
 
   useEffect(() => {
 
-    setSquares(Game.readFEN(squares, FEN))
+    setSquares(Game.readFEN(squares, props.FEN, setCurrentPlayer, setCastling, setEnPassant,setHalfMoveClock, setFullMoveNumber))
 
-  }, [FEN])
+  }, [props.FEN])
 
   useEffect(() => {
 
-    setCastling(Game.checkCastlingRights(squares, castling))
     if (Game.checkForMate(squares, currentPlayer, enPassant, castling)) console.log("CheckMate!")
+    props.setFEN(Game.writeFEN(squares, currentPlayer, castling, enPassant, halfMoveClock, fullMoveNumber))
 
   }, [currentPlayer])
 

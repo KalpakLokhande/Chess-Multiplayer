@@ -28,11 +28,14 @@
 .square {
     width: 80px;
     height: 80px;
+    /* rotate: 180deg; */
+
 }
 
 .piece{
     width: 80px;
     height: 80px;
+    /* rotate: 180deg; */
 }
 
 .light {

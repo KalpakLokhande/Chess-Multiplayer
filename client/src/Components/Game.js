@@ -25,35 +25,43 @@ export default class Game {
 
     }
 
-    static readFEN = (squares, FEN) => {
+    static readFEN = (squares, FEN, setCurrentPlayer, setCastling, setEnPassant, setHalfMoveClock, setFullMoveNumber) => {
 
         let updatedSquares = [...squares]
         let index = 0
+        let part = 0
 
         for (let i = 0; i < FEN.length; i++) {
 
             let char = FEN.charAt(i)
 
-            if (!isNaN(char)) {
-
-                index += parseInt(char)
-
-            } else if (char === '/') {
-
-                continue
-
-            } else if (char === char.toLowerCase()) {
-
-                updatedSquares[index].piece = { id: 'b' + char, firstMove: true }
-                index++
+            if (part === 0) {
 
 
-            } else if (char === char.toUpperCase()) {
+                if (char === ' ') part++
 
-                updatedSquares[index].piece = { id: 'w' + char.toLowerCase(), firstMove: true }
-                index++
+                if (!isNaN(char)) {
 
-            }
+                    index += parseInt(char)
+
+                } else if (char === '/') {
+
+                    continue
+
+                } else if (char === char.toLowerCase()) {
+
+                    updatedSquares[index].piece = { id: 'b' + char, firstMove: true }
+                    index++
+
+
+                } else if (char === char.toUpperCase()) {
+
+                    updatedSquares[index].piece = { id: 'w' + char.toLowerCase(), firstMove: true }
+                    index++
+
+                }
+
+            } 
 
         }
 
@@ -61,6 +69,61 @@ export default class Game {
 
     }
 
+    static writeFEN(squares, currentPlayer, castling, enPassant, halfMoveClock, fullMoveNumber) {
+
+        let FEN = ''
+        let emptySquares = 0
+        let columnTracker = 0
+
+        for (let i = 0; i < squares.length; i++) {
+
+            if (columnTracker === 8) {
+
+                if (emptySquares > 0) FEN += emptySquares
+                emptySquares = 0
+                FEN += '/'
+                columnTracker = 0
+
+            }
+            if (!squares[i].piece) {
+
+                emptySquares++
+                columnTracker++
+
+            }
+            if (squares[i].piece && squares[i].piece.id.charAt(0) === 'b') {
+
+                if (emptySquares > 0) FEN += emptySquares
+                FEN += squares[i].piece.id.charAt(1)
+                emptySquares = 0
+                columnTracker++
+
+            }
+            if (squares[i].piece && squares[i].piece.id.charAt(0) === 'w') {
+
+                if (emptySquares > 0) FEN += emptySquares
+                FEN += squares[i].piece.id.charAt(1).toUpperCase()
+                emptySquares = 0
+                columnTracker++
+
+            }
+
+        }
+
+        FEN += ` ${currentPlayer}`
+
+        let cas = (castling[0] ? 'K' : '') + (castling[1] ? 'Q' : '') + (castling[2] ? 'k' : '') + (castling[3] ? 'q' : '')
+        if (!castling[0] && !castling[1] && !castling[2] && !castling[3]) cas = '-'
+        FEN += ' ' + cas
+
+        if (enPassant) FEN += ' ' + enPassant.square.id.toLowerCase()
+        else FEN += ' -'
+
+        FEN += ' ' + halfMoveClock
+        FEN += ' ' + fullMoveNumber
+
+        return FEN
+    }
 
     static checkForMate = (squares, currentPlayer, enPassant, castling) => {
 
@@ -76,7 +139,7 @@ export default class Game {
 
         currentPlayerPieces.forEach(piece => {
 
-            let possibleMoves = Moves.getMoves(piece, squares, enPassant,castling)
+            let possibleMoves = Moves.getMoves(piece, squares, enPassant, castling)
             let originSquare = squares[piece.index]
             let originPiece = squares[piece.index].piece
 
@@ -84,7 +147,7 @@ export default class Game {
 
                 originSquare.piece = ''
                 possibleMoves[0][i].piece = originPiece
-                let check = Moves.getAllPossibleMoves(squares, currentPlayer === 'w' ? 'b' : 'w', enPassant,castling)
+                let check = Moves.getAllPossibleMoves(squares, currentPlayer === 'w' ? 'b' : 'w', enPassant, castling)
 
                 if (!check[1].some(sq => sq.piece.id === currentPlayer + 'k')) AllPossibleMoves.push(possibleMoves[0][i])
 
@@ -113,13 +176,13 @@ export default class Game {
 
     }
 
-    static checkCastlingRights = (squares, castling, setCastling) => {
+    static checkCastlingRights = (squares) => {
 
         let blackRooks = []
         let whiteRooks = []
         let hasWhiteKingMoved = false
         let hasBlackKingMoved = false
-        let updatedCastling = [false,false,false,false]
+        let updatedCastling = [false, false, false, false]
 
         squares.forEach(square => {
 
@@ -138,7 +201,7 @@ export default class Game {
 
             })
 
-        }else{
+        } else {
             updatedCastling[0] = false
             updatedCastling[0] = false
         }
@@ -152,7 +215,7 @@ export default class Game {
 
             })
 
-        }else{
+        } else {
             updatedCastling[2] = false
             updatedCastling[3] = false
         }
