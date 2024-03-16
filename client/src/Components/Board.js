@@ -5,17 +5,15 @@ import Moves from './Moves'
 
 const Board = (props) => {
 
-  // const [FEN, setFEN] = useState('r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R')
-
-  const [squares, setSquares] = useState(Game.getSquares())
+  // const [squares, setSquares] = useState(Game.getSquares())
   const [activeSquare, setActiveSquare] = useState('')
-  const [currentPlayer, setCurrentPlayer] = useState('w')
+  // const [currentPlayer, setCurrentPlayer] = useState('w')
   const [enPassant, setEnPassant] = useState(null)
   const [castling, setCastling] = useState([true, true, true, true])
   const [halfMoveClock, setHalfMoveClock] = useState(0)
   const [fullMoveNumber, setFullMoveNumber] = useState(1)
 
-  const showMoves = (square, possibleMoves, enPassant) => {
+  const showMoves = (square, squares, possibleMoves, enPassant) => {
 
     resetState()
 
@@ -88,7 +86,7 @@ const Board = (props) => {
 
   }
 
-  const movePiece = (newSquare) => {
+  const movePiece = (newSquare, squares) => {
 
     let temp = activeSquare.piece
     squares[newSquare.index].piece = temp
@@ -99,7 +97,7 @@ const Board = (props) => {
       if (activeSquare.id.charAt(1) === '2') setEnPassant({ square: squares[activeSquare.index - 8], originalSquare: squares[newSquare.index], piece: activeSquare.piece })
       if (activeSquare.id.charAt(1) === '7') setEnPassant({ square: squares[activeSquare.index + 8], originalSquare: squares[newSquare.index], piece: activeSquare.piece })
 
-    }else {
+    } else {
 
       setEnPassant(null)
       setHalfMoveClock(prevhalfMoveClock => prevhalfMoveClock + 1)
@@ -109,7 +107,7 @@ const Board = (props) => {
 
       setHalfMoveClock(0)
 
-    } 
+    }
 
     if (activeSquare.piece.id.charAt(1) === 'k') {
 
@@ -131,7 +129,6 @@ const Board = (props) => {
 
           let rook = squares[activeSquare.index - 4].piece
           let king = activeSquare.piece
-          console.log(king)
           squares[activeSquare.index - 4].piece = ''
           squares[activeSquare.index].piece = ''
           squares[newSquare.index].piece = king
@@ -175,12 +172,12 @@ const Board = (props) => {
     swapCurrentPlayer()
     setCastling(Game.checkCastlingRights(squares, castling))
 
-    if(activeSquare.piece.id.charAt(0) === 'b') setFullMoveNumber(prevfullMoveNumber => prevfullMoveNumber + 1)
-    
+    if (activeSquare.piece.id.charAt(0) === 'b') setFullMoveNumber(prevfullMoveNumber => prevfullMoveNumber + 1)
+
 
   }
 
-  const capturePiece = (newSquare, enPassantCapture) => {
+  const capturePiece = (newSquare,squares, enPassantCapture) => {
 
     let temp = activeSquare.piece
     if (enPassant && newSquare.id === enPassantCapture.square.id) {
@@ -201,7 +198,7 @@ const Board = (props) => {
     swapCurrentPlayer()
     setCastling(Game.checkCastlingRights(squares, castling))
     setHalfMoveClock(0)
-    if(activeSquare.piece.id.charAt(0) === 'b') setFullMoveNumber(prevfullMoveNumber => prevfullMoveNumber + 1)
+    if (activeSquare.piece.id.charAt(0) === 'b') setFullMoveNumber(prevfullMoveNumber => prevfullMoveNumber + 1)
 
   }
 
@@ -209,13 +206,13 @@ const Board = (props) => {
 
   const swapCurrentPlayer = () => {
 
-    setCurrentPlayer(currentPlayer === 'w' ? 'b' : 'w')
+    props.setCurrentPlayer(props.currentPlayer === 'w' ? 'b' : 'w')
 
   }
 
   const resetState = () => {
 
-    let updatedSquares = [...squares]
+    let updatedSquares = [...props.squares]
 
     updatedSquares.forEach(square => {
 
@@ -224,12 +221,12 @@ const Board = (props) => {
       square.highlight = false
 
     })
-    setSquares(updatedSquares)
+    props.setSquares(updatedSquares)
   }
 
   const renderSquares = () => {
 
-    return squares.map(({ id, index, isDark, piece, highlight, isPossibleMove, isPossibleCapture }) => {
+    return props.squares.map(({ id, index, isDark, piece, highlight, isPossibleMove, isPossibleCapture }) => {
       return (
         <Square
           id={id}
@@ -240,10 +237,11 @@ const Board = (props) => {
           isPossibleMove={isPossibleMove}
           isPossibleCapture={isPossibleCapture}
           highlight={highlight}
-          currentPlayer={currentPlayer}
-          squares={squares}
+          currentPlayer={props.currentPlayer}
+          squares={props.squares}
           enPassant={enPassant}
           castling={castling}
+          onBottom={props.onBottom}
           movePiece={movePiece}
           capturePiece={capturePiece}
           handleClick={showMoves}>
@@ -256,20 +254,15 @@ const Board = (props) => {
 
   useEffect(() => {
 
-    setSquares(Game.readFEN(squares, props.FEN, setCurrentPlayer, setCastling, setEnPassant,setHalfMoveClock, setFullMoveNumber))
+    props.setSquares(Game.readFEN(props.squares, props.FEN, props.setCurrentPlayer, setCastling, setEnPassant, setHalfMoveClock, setFullMoveNumber))
+    if (Game.checkForMate(props.squares, props.currentPlayer, enPassant, castling)) console.log("CheckMate!")
+    props.setFEN(Game.writeFEN(props.squares, props.currentPlayer, castling, enPassant, halfMoveClock, fullMoveNumber))
+    console.log(Game.writeFEN(props.squares, props.currentPlayer, castling, enPassant, halfMoveClock, fullMoveNumber))
 
-  }, [props.FEN])
-
-  useEffect(() => {
-
-    if (Game.checkForMate(squares, currentPlayer, enPassant, castling)) console.log("CheckMate!")
-    props.setFEN(Game.writeFEN(squares, currentPlayer, castling, enPassant, halfMoveClock, fullMoveNumber))
-
-  }, [currentPlayer])
-
+  }, [])
 
   return (
-    <div className='board' >
+    <div className='board' style={{ rotate: props.onBottom === 'w' ? '0deg' : '180deg' }} >
       {renderSquares()}
     </div>
   )
