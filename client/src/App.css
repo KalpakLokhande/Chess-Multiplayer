@@ -2,6 +2,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
 }
 
 .App {
@@ -10,7 +11,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background: radial-gradient(#303030, black);
+    background: radial-gradient(#505050, black);
+    /* background: #203020; */
     overflow: hidden;
 }
 

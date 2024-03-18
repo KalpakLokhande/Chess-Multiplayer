@@ -35,10 +35,9 @@ export default class Game {
 
             let char = FEN.charAt(i)
 
+            if (char === ' ') part++
+            
             if (part === 0) {
-
-
-                if (char === ' ') part++
 
                 if (!isNaN(char)) {
 
@@ -62,6 +61,8 @@ export default class Game {
                 }
 
             } 
+
+            else if(part === 1) { if(setCurrentPlayer) setCurrentPlayer(char)}
 
         }
 
@@ -190,6 +191,7 @@ export default class Game {
             if (square.piece && square.piece.id.charAt(0) === 'w' && square.piece.id.charAt(1) === 'r') whiteRooks.push(square)
             if (square.piece && square.piece.id.charAt(0) === 'w' && square.piece.id.charAt(1) === 'k') hasWhiteKingMoved = square.piece.firstMove
             if (square.piece && square.piece.id.charAt(0) === 'b' && square.piece.id.charAt(1) === 'k') hasBlackKingMoved = square.piece.firstMove
+        
         })
 
         if (hasWhiteKingMoved) {

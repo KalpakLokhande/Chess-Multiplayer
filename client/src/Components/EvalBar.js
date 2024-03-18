@@ -11,10 +11,11 @@ const EvalBar = (props) => {
 
       try{
 
-        const evaluation = await axios.get(`https://stockfish.online/api/stockfish.php?fen=${props.FEN}&depth=13&mode=eval`)
-        const numbers = evaluation.data.data.match(/-?\d+\.\d+/);
-        console.log(parseFloat(50) + parseFloat(numbers[0]))
-        setScore(numbers[0])
+        const evaluation = await axios.get(`https://stockfish.online/api/s/v2.php?fen=${props.FEN}&depth=15&mode=eval`)
+        if(evaluation.data.evaluation <= 3) setScore(evaluation.data.evaluation)
+        else if(evaluation.data.evaluation > 3) setScore(evaluation.data.evaluation * 3)
+        else if(evaluation.data.evaluation > 5) setScore(evaluation.data.evaluation * 5)
+
 
       }catch(err){
 
@@ -28,7 +29,7 @@ const EvalBar = (props) => {
 
   },[props.FEN])
   return (
-    <div style={{position:'relative',width:'25px', height:'640px', background:'#101010'}}>
+    <div style={{position:'relative',width:'25px', height:'640px', background:'#101010', rotate : props.onBottom === 'w' ? '180deg' : '0deg'}}>
       <div style={{position:'absolute',width:'25px', height: (parseFloat(50) + parseFloat(score) ) + '%', background:'ghostWhite'}} ></div>
     </div>
   )
