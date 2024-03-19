@@ -7,8 +7,8 @@ import Game from './Game'
 
 const Puzzles = () => {
 
-    const [solvedPuzzles, setSolvedPuzzles] = useState(0)
-    const [puzzleMoves, setPuzzleMoves] = useState(-1)
+    const [solvedPuzzles, setSolvedPuzzles] = useState(7)
+    const [puzzleMoves, setPuzzleMoves] = useState(-2)
     const [FEN, setFEN] = useState('')
     const [botColor, setBotColor] = useState(null)
     const [currentPlayer, setCurrentPlayer] = useState(null)
@@ -20,176 +20,91 @@ const Puzzles = () => {
     const [movesList, setMovesList] = useState([])
     const [themes, setThemes] = useState([])
 
-    const resetBoard = () => {
+    // const [state,setState] = useState({
+    //     solvedPuzzles : 0,
+    //     puzzleMoves : -1,
+    //     FEN : '',
+    //     botColor : null,
+    //     currentPlayer : null,
+    //     squares : Game.getSquares(),
+    //     castling : [false,false,false,false],
+    //     enPassant : null,
+    //     halfMoveClock : 0,
+    //     fullMoveNumber : 1,
+    //     movesList : [],
+    //     themes : []
+    // })
+
+    // const { solvedPuzzles, puzzleMoves, FEN, botColor, currentPlayer, squares, castling, enPassant, halfMoveClock, fullMoveNumber, movesList } = state;
+
+    const getBotColor = () => {
 
         let part = 0
 
         setSquares(Game.getSquares())
+        setFEN(puzzleList.puzzles[solvedPuzzles].fen)
+        setPuzzleMoves(prev => prev + 1)
+
+        setSquares(Game.readFEN(Game.getSquares(), puzzleList.puzzles[solvedPuzzles].fen, setCurrentPlayer, setCastling, setEnPassant, setFullMoveNumber, setFullMoveNumber))
+
         for (let i = 0; i < puzzleList.puzzles[solvedPuzzles].fen.length; i++) {
 
             let char = puzzleList.puzzles[solvedPuzzles].fen[i]
-
-            if (char === ' ') part++
-            if (part === 1 && char === 'w') setBotColor(char)
-            if (part === 1 && char === 'b') setBotColor(char)
-
+            if (char === ' ') part += 1
+            else if (part === 1) return char
 
         }
-
-        setFEN(puzzleList.puzzles[solvedPuzzles].fen)
-        setSquares(Game.readFEN(squares, puzzleList.puzzles[solvedPuzzles].fen, setCurrentPlayer, setCastling, setEnPassant, setHalfMoveClock, setFullMoveNumber))
-        setPuzzleMoves(-1)
-        // setFEN(Game.writeFEN(squares,currentPlayer,castling,enPassant,halfMoveClock,fullMoveNumber))
-
-    }
-
-    const reset = () => {
-
-        setPuzzleMoves(-1)
-        // resetBoard()
 
     }
 
     const next = () => {
 
         setSolvedPuzzles(prev => prev + 1)
-        console.log(puzzleList.puzzles[solvedPuzzles].fen)
-        // resetBoard()
+        setPuzzleMoves(-2)
+        setBotColor(getBotColor())
+
+    }
+
+    const reset = () => {
+
+        setPuzzleMoves(-1)
+        setBotColor(getBotColor())
 
     }
 
     useEffect(() => {
-        resetBoard()
-    }, [solvedPuzzles])
 
+        setBotColor(getBotColor())
+
+    }, [solvedPuzzles])
 
     useEffect(() => {
 
-        console.log(FEN)
-        let part = 0
-        let enpassant = ''
-        let halfmove = ''
-        let fullmoveNumber = ''
-
-        console.log(botColor, currentPlayer)
-        setPuzzleMoves(prevPuzzleMoves => prevPuzzleMoves + 1)
-
-
-        // for (let i = 0; i < FEN.length; i++) {
-
-        //     let char = FEN[i]
-
-        //     if (char === ' ') part++
-        //     if (part === 1 && char === 'w') setCurrentPlayer(char)
-        //     if (part === 1 && char === 'b') setCurrentPlayer(char)
-        //     if (part === 2 && char === 'K') castling[0] = true
-        //     if (part === 2 && char === 'Q') castling[1] = true
-        //     if (part === 2 && char === 'k') castling[2] = true
-        //     if (part === 2 && char === 'q') castling[3] = true
-        //     if (part === 2 && char === '-') setCastling([false, false, false, false])
-        //     if (part === 3) enpassant += char
-        //     if (part === 4) halfmove += char
-        //     if (part === 5) fullmoveNumber += char
-
-        // }
-
-
-        // if (enpassant !== '-') { setEnPassant(enPassant) }
-        // else { setEnPassant(null) }
-        // setHalfMoveClock(parseInt(halfmove))
-        // setFullMoveNumber(parseInt(fullmoveNumber))
-        setPuzzleMoves(prevPuzzleMoves => prevPuzzleMoves + 1)
-        Game.readFEN(squares, FEN, setCurrentPlayer, setCastling, setEnPassant, setHalfMoveClock, setFullMoveNumber)
-
-
-        if (botColor !== null) {
-
-            if (currentPlayer === botColor) {
-
-                // if (puzzleMoves === puzzleList.puzzles[solvedPuzzles].moves.length) {
-                //     console.log("Solved")
-                //     return
-                // }
-
-                // setTimeout(() => {
-                let moveFrom = squares.find(square => square.id === puzzleList.puzzles[solvedPuzzles].moves[puzzleMoves].substring(0, 2).toUpperCase())
-                let moveTo = squares.find(square => square.id === puzzleList.puzzles[solvedPuzzles].moves[puzzleMoves].substring(2).toUpperCase())
-
-                console.log(currentPlayer)
+        if (botColor && botColor === currentPlayer && puzzleList.puzzles[solvedPuzzles].moves[puzzleMoves]) {
+            
+            setTimeout(() => {
+                
+                // setPuzzleMoves(prev => prev + 1)
+                // setSquares(Game.readFEN(squares, FEN, setCurrentPlayer, setCastling, setEnPassant, setHalfMoveClock, setFullMoveNumber))
+                let moveFrom = squares.find(square => square.id.toLowerCase() === puzzleList.puzzles[solvedPuzzles].moves[puzzleMoves].substring(0, 2))
+                let moveTo = squares.find(square => square.id.toLowerCase() === puzzleList.puzzles[solvedPuzzles].moves[puzzleMoves].substring(2))
+                console.log(moveFrom,moveTo)
                 let temp = moveFrom.piece
                 moveFrom.piece = ''
                 moveTo.piece = temp
-                setCurrentPlayer(currentPlayer === 'w' ? 'b' : 'w')
-                setFullMoveNumber(prev => prev + 1)
-                Game.readFEN(squares, FEN, setCurrentPlayer, setCastling, setEnPassant, setHalfMoveClock, setFullMoveNumber)
-                setSquares(Game.readFEN(squares, FEN, setCurrentPlayer, setCastling, setEnPassant, setHalfMoveClock, setFullMoveNumber))
-                // }, 1000)
+                setCurrentPlayer(botColor === 'w' ? 'b' : 'w')
 
-            } else {
+            },500)
 
-                if (puzzleList.puzzles[solvedPuzzles].moves[puzzleMoves - 2]) {
+        } else {
 
-                    if (movesList === puzzleList.puzzles[solvedPuzzles].moves[puzzleMoves - 2]) console.log("Correct")
-                    else console.log("Nope")
-
-                    return
-
-                }
-
-            }
-
-            if (part === 1 && char === 'w') return 'w';
-            if (part === 1 && char === 'b') return 'b';
-
-        }
-
-    },[])
-
-    useEffect(() => { setBotColor(getBotColor()) }, [])
-
-    useEffect(() => {
-
-        let part = 0
-        setPuzzleMoves(prevPuzzleMoves => prevPuzzleMoves + 1)
-
-        for (let i = 0; i < FEN.length; i++) {
-
-            let char = FEN[i]
-
-            if (char === ' ') part++
-            if (part === 1 && char === 'w') setCurrentPlayer(char)
-            if (part === 1 && char === 'b') setCurrentPlayer(char)
-
-        }
-
-        if (botColor !== null) {
-
-            if (currentPlayer === botColor ) {
-
-                setTimeout(() => {
-
-                    let moveFrom = squares.find(square => square.id === puzzleList.puzzles[solvedPuzzles].moves[puzzleMoves].substring(0, 2).toUpperCase())
-                    let moveTo = squares.find(square => square.id === puzzleList.puzzles[solvedPuzzles].moves[puzzleMoves].substring(2).toUpperCase())
-    
-                    console.log(puzzleList.puzzles[solvedPuzzles].moves[puzzleMoves])
-                    let temp = moveFrom.piece
-                    moveFrom.piece = ''
-                    moveTo.piece = temp
-                    setCurrentPlayer(currentPlayer === 'w' ? 'b' : 'w')
-                    setFEN(Game.writeFEN(squares, currentPlayer === 'w' ? 'b' : 'w', '', '', '', ''))
-                    
-                },1000)
-                
-            } else {
-                
-                return
-                
-            }
+            return
             
         }
 
-    }, [currentPlayer])
+    }, [ currentPlayer, solvedPuzzles])
 
+useEffect(()=>{setPuzzleMoves(prev => prev + 1)},[currentPlayer])
 
     return (
         <div style={{ width: '100%', height: '100dvh', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '20px', background: 'radial-gradient(#303030,black)' }} >

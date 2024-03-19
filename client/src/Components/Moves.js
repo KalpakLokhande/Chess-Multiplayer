@@ -118,7 +118,7 @@ export default class Moves {
 
             if (col >= 65 && col <= 72 && row >= 1 && row <= 8) {
                 let index = 64 - (row * 8) + (col - 65);
-                if (enPassant && enPassant.square.id === squares[index].id) {
+                if (enPassant && enPassant.square.id === squares[index].id && enPassant.square.piece.id !== squares[index].piece.id) {
                     legalMoves[1].push(squares[index]);
                 }
                 if (squares[index] && squares[index].piece && squares[index].piece.id.charAt(0) !== square.piece.id.charAt(0)) {

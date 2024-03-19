@@ -30,13 +30,20 @@ export default class Game {
         let updatedSquares = [...squares]
         let index = 0
         let part = 0
+        let castling = [false, false, false, false]
+        let enpassant = ''
+        let halfmove = ''
+        let fullmovenumber = ''
 
         for (let i = 0; i < FEN.length; i++) {
 
             let char = FEN.charAt(i)
 
-            if (char === ' ') part++
-            
+            if (char === ' ') {
+                part++;
+                continue
+            }
+
             if (part === 0) {
 
                 if (!isNaN(char)) {
@@ -60,11 +67,25 @@ export default class Game {
 
                 }
 
-            } 
+            }
 
-            else if(part === 1) { if(setCurrentPlayer) setCurrentPlayer(char)}
+            else if (part === 1) { setCurrentPlayer(char) }
+            else if (part === 2 && char === 'K') castling[0] = true
+            else if (part === 2 && char === 'Q') castling[1] = true
+            else if (part === 2 && char === 'k') castling[2] = true
+            else if (part === 2 && char === 'q') castling[3] = true
+            else if (part === 2 && char === '-') castling = [false, false, false, false]
+            else if (part === 3) enpassant += char
+            else if (part === 4) halfmove += char
+            else if (part === 5) fullmovenumber += char
 
         }
+
+        if (enpassant === '-') setEnPassant(null)
+        else setEnPassant(enpassant)
+        setCastling(castling)
+        setHalfMoveClock(halfmove)
+        setFullMoveNumber(fullmovenumber)
 
         return updatedSquares
 
@@ -191,7 +212,7 @@ export default class Game {
             if (square.piece && square.piece.id.charAt(0) === 'w' && square.piece.id.charAt(1) === 'r') whiteRooks.push(square)
             if (square.piece && square.piece.id.charAt(0) === 'w' && square.piece.id.charAt(1) === 'k') hasWhiteKingMoved = square.piece.firstMove
             if (square.piece && square.piece.id.charAt(0) === 'b' && square.piece.id.charAt(1) === 'k') hasBlackKingMoved = square.piece.firstMove
-        
+
         })
 
         if (hasWhiteKingMoved) {
@@ -226,4 +247,139 @@ export default class Game {
         return updatedCastling
 
     }
+
+    static movePiece = (activeSquare, newSquare, squares, castling, setCastling, setEnPassant, setHalfMoveClock, setFullMoveNumber, setActiveSquare, setCurrentPlayer, currentPlayer, setSquares) => {
+
+        let temp = activeSquare.piece
+        squares[newSquare.index].piece = temp
+        squares[activeSquare.index].piece = ''
+
+        if (activeSquare.piece.id.charAt(1) === 'p' && (activeSquare.id.charAt(1) === '2' || activeSquare.id.charAt(1) === '7') && (newSquare.id.charAt(1) === '4' || newSquare.id.charAt(1) === '5')) {
+
+            if (activeSquare.id.charAt(1) === '2') setEnPassant({ square: squares[activeSquare.index - 8], originalSquare: squares[newSquare.index], piece: activeSquare.piece })
+            if (activeSquare.id.charAt(1) === '7') setEnPassant({ square: squares[activeSquare.index + 8], originalSquare: squares[newSquare.index], piece: activeSquare.piece })
+
+        } else {
+
+            setEnPassant(null)
+            setHalfMoveClock(prevhalfMoveClock => prevhalfMoveClock + 1)
+
+        }
+        if (activeSquare.piece.id.charAt(1) === 'p') {
+
+            setHalfMoveClock(0)
+
+        }
+
+        if (activeSquare.piece.id.charAt(1) === 'k') {
+
+            if (activeSquare.piece.id.charAt(0) === 'w') {
+
+                if (newSquare.id === squares[activeSquare.index + 2].id && castling[0]) {
+
+                    let rook = squares[activeSquare.index + 3].piece
+                    let king = activeSquare.piece
+                    squares[activeSquare.index + 3].piece = ''
+                    squares[activeSquare.index].piece = ''
+                    squares[newSquare.index].piece = king
+                    squares[activeSquare.index + 1].piece = rook
+
+
+                }
+
+                if (newSquare.id === squares[activeSquare.index - 2].id && castling[1]) {
+
+                    let rook = squares[activeSquare.index - 4].piece
+                    let king = activeSquare.piece
+                    squares[activeSquare.index - 4].piece = ''
+                    squares[activeSquare.index].piece = ''
+                    squares[newSquare.index].piece = king
+                    squares[activeSquare.index - 1].piece = rook
+                }
+
+            }
+
+            if (activeSquare.piece.id.charAt(0) === 'b') {
+
+                if (newSquare.id === squares[activeSquare.index + 2].id && castling[2]) {
+
+                    let rook = squares[activeSquare.index + 3].piece
+                    let king = activeSquare.piece
+                    squares[activeSquare.index + 3].piece = ''
+                    squares[activeSquare.index].piece = ''
+                    squares[newSquare.index].piece = king
+                    squares[activeSquare.index + 1].piece = rook
+
+
+                }
+
+                if (newSquare.id === squares[activeSquare.index - 2].id && castling[3]) {
+
+                    let rook = squares[activeSquare.index - 4].piece
+                    let king = activeSquare.piece
+                    squares[activeSquare.index - 4].piece = ''
+                    squares[activeSquare.index].piece = ''
+                    squares[newSquare.index].piece = king
+                    squares[activeSquare.index - 1].piece = rook
+                }
+
+            }
+
+        }
+
+        if (activeSquare.piece.firstMove === true) activeSquare.piece.firstMove = false
+
+        // setActiveSquare('')
+        Game.resetState(squares,setSquares)
+        setCurrentPlayer(currentPlayer === 'w' ? 'b' : 'w')
+        setCastling(Game.checkCastlingRights(squares, castling))
+
+        if (activeSquare.piece.id.charAt(0) === 'b') setFullMoveNumber(prevfullMoveNumber => prevfullMoveNumber + 1)
+
+
+    }
+
+
+    static capturePiece = (activeSquare, newSquare, squares, enPassant, setActiveSquare, setHalfMoveClock, setFullMoveNumber, setSquares, currentPlayer,setCurrentPlayer) => {
+
+        let temp = activeSquare.piece
+        if (enPassant && newSquare.id === enPassant.square.id) {
+
+            enPassant.square.piece = temp
+            enPassant.originalSquare.piece = ''
+            squares[activeSquare.index].piece = ''
+
+        } else {
+
+            squares[newSquare.index].piece = temp
+            squares[activeSquare.index].piece = ''
+
+        }
+
+        // setActiveSquare('')
+        Game.resetState(squares, setSquares)
+        setCurrentPlayer(currentPlayer === 'w' ? 'b' : 'w')
+        // props.setCastling(Game.checkCastlingRights(props.squares, props.castling))
+        setHalfMoveClock(0)
+        if (activeSquare.piece.id.charAt(0) === 'b') setFullMoveNumber(prevfullMoveNumber => prevfullMoveNumber + 1)
+
+    }
+
+    static resetState = (squares, setSquares) => {
+
+        let updatedSquares = [...squares]
+
+        updatedSquares.forEach(square => {
+
+            square.isPossibleCapture = false
+            square.isPossibleMove = false
+            square.highlight = false
+
+        })
+
+        setSquares(updatedSquares)
+
+    }
 }
+
+

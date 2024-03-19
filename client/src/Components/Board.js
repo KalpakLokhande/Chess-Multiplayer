@@ -5,17 +5,11 @@ import Moves from './Moves'
 
 const Board = (props) => {
 
-  // const [squares, setSquares] = useState(Game.getSquares())
   const [activeSquare, setActiveSquare] = useState('')
-  // const [currentPlayer, setCurrentPlayer] = useState('w')
-  const [enPassant, setEnPassant] = useState(null)
-  const [castling, setCastling] = useState([true, true, true, true])
-  const [halfMoveClock, setHalfMoveClock] = useState(0)
-  const [fullMoveNumber, setFullMoveNumber] = useState(1)
 
   const showMoves = (square, squares, possibleMoves, enPassant) => {
 
-    resetState()
+    Game.resetState(squares,props.setSquares)
 
     setActiveSquare(square)
     const updatedSquares = [...squares]
@@ -34,11 +28,11 @@ const Board = (props) => {
 
       if (square.piece.id.charAt(0) === 'w') {
 
-        if (castling[0]) {
+        if (props.castling[0]) {
 
           if (squares[square.index + 1].piece === '' && squares[square.index + 2].piece === '') possibleMoves[0].push(squares[square.index + 2])
 
-        } if (castling[1]) {
+        } if (props.castling[1]) {
 
           if (squares[square.index - 1].piece === '' && squares[square.index - 2].piece === '') possibleMoves[0].push(squares[square.index - 2])
 
@@ -48,11 +42,11 @@ const Board = (props) => {
 
       if (square.piece.id.charAt(0) === 'b') {
 
-        if (castling[2]) {
+        if (props.castling[2]) {
 
           if (squares[square.index + 1].piece === '' && squares[square.index + 2].piece === '') possibleMoves[0].push(squares[square.index + 2])
 
-        } if (castling[3]) {
+        } if (props.castling[3]) {
 
           if (squares[square.index - 1].piece === '' && squares[square.index - 2].piece === '') possibleMoves[0].push(squares[square.index - 2])
 
@@ -86,144 +80,6 @@ const Board = (props) => {
 
   }
 
-  const movePiece = (newSquare, squares) => {
-
-    let temp = activeSquare.piece
-    squares[newSquare.index].piece = temp
-    squares[activeSquare.index].piece = ''
-
-    if (activeSquare.piece.id.charAt(1) === 'p' && (activeSquare.id.charAt(1) === '2' || activeSquare.id.charAt(1) === '7') && (newSquare.id.charAt(1) === '4' || newSquare.id.charAt(1) === '5')) {
-
-      if (activeSquare.id.charAt(1) === '2') setEnPassant({ square: squares[activeSquare.index - 8], originalSquare: squares[newSquare.index], piece: activeSquare.piece })
-      if (activeSquare.id.charAt(1) === '7') setEnPassant({ square: squares[activeSquare.index + 8], originalSquare: squares[newSquare.index], piece: activeSquare.piece })
-
-    } else {
-
-      setEnPassant(null)
-      setHalfMoveClock(prevhalfMoveClock => prevhalfMoveClock + 1)
-
-    }
-    if (activeSquare.piece.id.charAt(1) === 'p') {
-
-      setHalfMoveClock(0)
-
-    }
-
-    if (activeSquare.piece.id.charAt(1) === 'k') {
-
-      if (activeSquare.piece.id.charAt(0) === 'w') {
-
-        if (newSquare.id === squares[activeSquare.index + 2].id && castling[0]) {
-
-          let rook = squares[activeSquare.index + 3].piece
-          let king = activeSquare.piece
-          squares[activeSquare.index + 3].piece = ''
-          squares[activeSquare.index].piece = ''
-          squares[newSquare.index].piece = king
-          squares[activeSquare.index + 1].piece = rook
-
-
-        }
-
-        if (newSquare.id === squares[activeSquare.index - 2].id && castling[1]) {
-
-          let rook = squares[activeSquare.index - 4].piece
-          let king = activeSquare.piece
-          squares[activeSquare.index - 4].piece = ''
-          squares[activeSquare.index].piece = ''
-          squares[newSquare.index].piece = king
-          squares[activeSquare.index - 1].piece = rook
-        }
-
-      }
-
-      if (activeSquare.piece.id.charAt(0) === 'b') {
-
-        if (newSquare.id === squares[activeSquare.index + 2].id && castling[2]) {
-
-          let rook = squares[activeSquare.index + 3].piece
-          let king = activeSquare.piece
-          squares[activeSquare.index + 3].piece = ''
-          squares[activeSquare.index].piece = ''
-          squares[newSquare.index].piece = king
-          squares[activeSquare.index + 1].piece = rook
-
-
-        }
-
-        if (newSquare.id === squares[activeSquare.index - 2].id && castling[3]) {
-
-          let rook = squares[activeSquare.index - 4].piece
-          let king = activeSquare.piece
-          squares[activeSquare.index - 4].piece = ''
-          squares[activeSquare.index].piece = ''
-          squares[newSquare.index].piece = king
-          squares[activeSquare.index - 1].piece = rook
-        }
-
-      }
-
-    }
-
-    if (activeSquare.piece.firstMove === true) activeSquare.piece.firstMove = false
-
-    setActiveSquare('')
-    resetState()
-    swapCurrentPlayer()
-    setCastling(Game.checkCastlingRights(squares, castling))
-
-    if (activeSquare.piece.id.charAt(0) === 'b') setFullMoveNumber(prevfullMoveNumber => prevfullMoveNumber + 1)
-
-
-  }
-
-  const capturePiece = (newSquare,squares, enPassantCapture) => {
-
-    let temp = activeSquare.piece
-    if (enPassant && newSquare.id === enPassantCapture.square.id) {
-
-      enPassant.square.piece = temp
-      enPassant.originalSquare.piece = ''
-      squares[activeSquare.index].piece = ''
-
-    } else {
-
-      squares[newSquare.index].piece = temp
-      squares[activeSquare.index].piece = ''
-
-    }
-
-    setActiveSquare('')
-    resetState()
-    swapCurrentPlayer()
-    setCastling(Game.checkCastlingRights(squares, castling))
-    setHalfMoveClock(0)
-    if (activeSquare.piece.id.charAt(0) === 'b') setFullMoveNumber(prevfullMoveNumber => prevfullMoveNumber + 1)
-
-  }
-
-
-
-  const swapCurrentPlayer = () => {
-
-    props.setCurrentPlayer(props.currentPlayer === 'w' ? 'b' : 'w')
-
-  }
-
-  const resetState = () => {
-
-    let updatedSquares = [...props.squares]
-
-    updatedSquares.forEach(square => {
-
-      square.isPossibleCapture = false
-      square.isPossibleMove = false
-      square.highlight = false
-
-    })
-    props.setSquares(updatedSquares)
-  }
-
   const renderSquares = () => {
 
     return props.squares.map(({ id, index, isDark, piece, highlight, isPossibleMove, isPossibleCapture }) => {
@@ -239,11 +95,17 @@ const Board = (props) => {
           highlight={highlight}
           currentPlayer={props.currentPlayer}
           squares={props.squares}
-          enPassant={enPassant}
-          castling={castling}
+          enPassant={props.enPassant}
+          castling={props.castling}
           onBottom={props.onBottom}
-          movePiece={movePiece}
-          capturePiece={capturePiece}
+          activeSquare={activeSquare}
+          setCastling={props.setCastling}
+          setEnPassant={props.setEnPassant}
+          setHalfMoveClock={props.setHalfMoveClock}
+          setFullMoveNumber={props.setFullMoveNumber}
+          setActiveSquare={setActiveSquare}
+          setSquares={props.setSquares}
+          setCurrentPlayer={props.setCurrentPlayer}
           handleClick={showMoves}>
         </Square>
       )
@@ -252,14 +114,13 @@ const Board = (props) => {
 
   }
 
-  useEffect(() => {
+  // useEffect(() => {
 
-    props.setSquares(Game.readFEN(props.squares, props.FEN, props.setCurrentPlayer, setCastling, setEnPassant, setHalfMoveClock, setFullMoveNumber))
-    if (Game.checkForMate(props.squares, props.currentPlayer, enPassant, castling)) console.log("CheckMate!")
-    props.setFEN(Game.writeFEN(props.squares, props.currentPlayer, castling, enPassant, halfMoveClock, fullMoveNumber))
-    console.log(Game.writeFEN(props.squares, props.currentPlayer, castling, enPassant, halfMoveClock, fullMoveNumber))
+  //   // if (Game.checkForMate(props.squares, props.currentPlayer, props.enPassant, props.castling)) console.log("CheckMate!")
+  //   // props.setFEN(Game.writeFEN(props.squares, props.currentPlayer, props.castling, props.enPassant, props.halfMoveClock, props.fullMoveNumber))
+  //   console.log(props.FEN)
 
-  }, [])
+  // }, [props.currentPlayer])
 
   return (
     <div className='board' style={{ rotate: props.onBottom === 'w' ? '0deg' : '180deg' }} >

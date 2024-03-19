@@ -1,5 +1,6 @@
 import Piece from './Piece'
 import Moves from './Moves'
+import Game from './Game'
 
 const Square = (props) => {
 
@@ -9,16 +10,27 @@ const Square = (props) => {
 
     if (props.isPossibleMove) {
 
-      props.movePiece(props, props.squares)
+      Game.movePiece(props.activeSquare,
+        props,
+        props.squares,
+        props.castling,
+        props.setCastling,
+        props.setEnPassant,
+        props.setHalfMoveClock,
+        props.setFullMoveNumber,
+        props.setActiveSquare,
+        props.setCurrentPlayer,
+        props.currentPlayer,
+        props.setSquares)
 
     } else if (props.isPossibleCapture) {
 
-      props.capturePiece(props, props.squares)
+      Game.capturePiece(props.activeSquare,props, props.squares, props.enPassant, props.setActiveSquare, props.setHalfMoveClock, props.setFullMoveNumber, props.setSquares, props.currentPlayer, props.setCurrentPlayer)
 
     } else if (props.piece && props.currentPlayer === props.piece.id.charAt(0) && props.piece.id.charAt(0) === props.onBottom) {
 
       possibleMoves = Moves.getMoves(props.squares[props.index], props.squares, props.enPassant, props.castling)
-      props.handleClick(props,props.squares, possibleMoves, props.enPassant)
+      props.handleClick(props, props.squares, possibleMoves, props.enPassant)
 
     }
 
