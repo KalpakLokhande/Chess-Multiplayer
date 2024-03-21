@@ -29,7 +29,8 @@ const Square = (props) => {
 
     } else if (props.piece && props.currentPlayer === props.piece.id.charAt(0) && props.piece.id.charAt(0) === props.onBottom) {
 
-      possibleMoves = Moves.getMoves(props.squares[props.index], props.squares, props.enPassant, props.castling)
+      console.log(props)
+      possibleMoves = Moves.getMoves(props.squares[props.index], props.squares, props.enPassant)
       props.handleClick(props, props.squares, possibleMoves, props.enPassant)
 
     }

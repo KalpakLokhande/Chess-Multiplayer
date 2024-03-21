@@ -82,7 +82,22 @@ export default class Game {
         }
 
         if (enpassant === '-') setEnPassant(null)
-        else setEnPassant(enpassant)
+        else {
+    console.log(enpassant[1])
+            let originalSquare
+            let square
+            let piece
+            if (enpassant[1] === '4') {
+                originalSquare = squares.find(square => square.id === enpassant[0] + parseInt(enpassant[1] + 2))
+                let square = squares.find(square => square.id === enpassant[0] + enpassant[1])
+                let piece = square.piece
+            } else if (enpassant[1] === '5') {
+                originalSquare = squares.find(square => square.id === enpassant[0] + parseInt(enpassant[1] - 2))
+                square = squares.find(square => square.id === enpassant[0] + enpassant[1])
+                piece = square.piece
+            }
+            setEnPassant({ originalSquare: originalSquare, square: square, piece: piece })
+        }
         setCastling(castling)
         setHalfMoveClock(halfmove)
         setFullMoveNumber(fullmovenumber)
@@ -138,7 +153,8 @@ export default class Game {
         if (!castling[0] && !castling[1] && !castling[2] && !castling[3]) cas = '-'
         FEN += ' ' + cas
 
-        if (enPassant) FEN += ' ' + enPassant.square.id.toLowerCase()
+        console.log(enPassant)
+        if (enPassant && enPassant.square) FEN += ' ' + enPassant.square.id.toLowerCase()
         else FEN += ' -'
 
         FEN += ' ' + halfMoveClock
@@ -330,7 +346,7 @@ export default class Game {
         if (activeSquare.piece.firstMove === true) activeSquare.piece.firstMove = false
 
         // setActiveSquare('')
-        Game.resetState(squares,setSquares)
+        Game.resetState(squares, setSquares)
         setCurrentPlayer(currentPlayer === 'w' ? 'b' : 'w')
         setCastling(Game.checkCastlingRights(squares, castling))
 
@@ -340,7 +356,7 @@ export default class Game {
     }
 
 
-    static capturePiece = (activeSquare, newSquare, squares, enPassant, setActiveSquare, setHalfMoveClock, setFullMoveNumber, setSquares, currentPlayer,setCurrentPlayer) => {
+    static capturePiece = (activeSquare, newSquare, squares, enPassant, setActiveSquare, setHalfMoveClock, setFullMoveNumber, setSquares, currentPlayer, setCurrentPlayer) => {
 
         let temp = activeSquare.piece
         if (enPassant && newSquare.id === enPassant.square.id) {

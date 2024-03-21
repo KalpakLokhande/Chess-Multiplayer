@@ -5,6 +5,7 @@ import Home from "./Components/Home";
 import Puzzles from "./Components/Puzzles";
 import ReviewGame from "./Components/ReviewGame";
 import PlayComputer from "./Components/PlayComputer";
+import PlayOnline from './Components/PlayOnline'
 
 function App() {
   return (
@@ -14,6 +15,8 @@ function App() {
         <Route element={<Puzzles></Puzzles>} path="/puzzles" ></Route>
         <Route element={<ReviewGame></ReviewGame>} path="/review" ></Route>
         <Route element={<PlayComputer></PlayComputer>} path="/playComputer" ></Route>
+        <Route element={<PlayOnline></PlayOnline>} path="/playOnline" ></Route>
+
       </Routes>
     </BrowserRouter>
   );

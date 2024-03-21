@@ -9,7 +9,7 @@ const Board = (props) => {
 
   const showMoves = (square, squares, possibleMoves, enPassant) => {
 
-    Game.resetState(squares,props.setSquares)
+    Game.resetState(squares, props.setSquares)
 
     setActiveSquare(square)
     const updatedSquares = [...squares]
@@ -79,6 +79,15 @@ const Board = (props) => {
     })
 
   }
+
+  useEffect(() => {
+
+    let FEN = Game.writeFEN(props.squares, props.currentPlayer, props.castling, props.enPassant, props.halfMoveClock, props.fullMoveNumber)
+    // props.setFEN(FEN)
+    props.setSquares(Game.readFEN(props.squares, FEN, props.setCurrentPlayer, props.setCastling, props.setEnPassant, props.setHalfMoveClock, props.setFullMoveNumber))
+    console.log(FEN)
+
+  }, [props.currentPlayer])
 
   const renderSquares = () => {
 
