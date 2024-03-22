@@ -86,6 +86,8 @@ const Puzzles = () => {
             
         }
 
+        console.log(movesList)
+
     }, [ currentPlayer, solvedPuzzles])
 
 useEffect(()=>{setPuzzleMoves(prev => prev + 1)},[currentPlayer])

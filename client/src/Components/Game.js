@@ -76,8 +76,8 @@ export default class Game {
             else if (part === 2 && char === 'q') castling[3] = true
             else if (part === 2 && char === '-') castling = [false, false, false, false]
             else if (part === 3) enpassant += char
-            else if (part === 4) halfmove += char
-            else if (part === 5) fullmovenumber += char
+            else if (part === 4) halfmove += parseInt(char)
+            else if (part === 5) fullmovenumber += parseInt(char)
 
         }
 

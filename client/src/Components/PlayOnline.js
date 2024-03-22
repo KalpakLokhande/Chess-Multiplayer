@@ -42,7 +42,7 @@ const PlayOnline = () => {
 
   socket.on('receiveFEN', ({ FEN, senderID }) => {
     setFEN(FEN)
-    setSquares(Game.readFEN(Game.getSquares(),FEN,setCurrentPlayer,setCastling,setEnPassant,setHalfMoveClock,setFullMoveNumber))
+    setSquares(Game.readFEN(Game.getSquares(), FEN, setCurrentPlayer, setCastling, setEnPassant, setHalfMoveClock, setFullMoveNumber))
     console.log(FEN)
   })
 
@@ -57,8 +57,8 @@ const PlayOnline = () => {
     // setSquares(Game.readFEN(squares, FEN, setCurrentPlayer, setCastling, setEnPassant, setHalfMoveClock, setFullMoveNumber))
     // let FEN = Game.writeFEN(squares,currentPlayer,castling,enPassant,halfMoveClock,fullMoveNumber)
     if (player1 && player2) {
-      
-      let updatedFEN = (Game.writeFEN(squares,currentPlayer,castling,enPassant,halfMoveClock,fullMoveNumber))
+
+      let updatedFEN = (Game.writeFEN(squares, currentPlayer, castling, enPassant, halfMoveClock, fullMoveNumber))
       // setFEN(Game.writeFEN(squares,currentPlayer,castling,enPassant,halfMoveClock,fullMoveNumber))
 
       const otherPlayer = sessionStorage.getItem('userName') === player1 ? player2 : player1;
